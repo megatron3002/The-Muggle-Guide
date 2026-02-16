@@ -6,7 +6,6 @@ No secrets are ever hardcoded.
 from __future__ import annotations
 
 import json
-import os
 from functools import lru_cache
 from typing import Optional
 
@@ -128,6 +127,7 @@ def get_settings() -> Settings:
                     setattr(settings, key.lower(), value)
         except Exception:
             import structlog
+
             logger = structlog.get_logger()
             logger.error("Failed to fetch AWS secrets — falling back to env vars")
 

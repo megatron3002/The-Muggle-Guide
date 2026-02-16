@@ -23,7 +23,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install linting tools
-        run: pip install ruff mypy
+        run: pip install ruff
 
       - name: Run Ruff linter
         run: ruff check api_service/ recommendation_engine/ training_pipeline/
@@ -75,17 +75,19 @@ jobs:
 
       - name: Run unit tests
         env:
+          PYTHONPATH: ${{ github.workspace }}
           ENVIRONMENT: testing
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password
           POSTGRES_DB: test_db
           POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
+          POSTGRES_PORT: "5432"
           REDIS_HOST: localhost
-          REDIS_PORT: 6379
+          REDIS_PORT: "6379"
           REDIS_PASSWORD: ""
           JWT_SECRET_KEY: test-secret-key-for-ci-only
           DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
+          MODEL_STORAGE_TYPE: local
         run: pytest tests/ -v --tb=short
 
   # ── Build Docker Images ──
@@ -94,7 +96,19 @@ jobs:
     needs: test
     strategy:
       matrix:
-        service: [api_service, recommendation_engine, training_pipeline, nginx]
+        include:
+          - service: api_service
+            context: ./api_service
+            dockerfile: ./api_service/Dockerfile
+          - service: recommendation_engine
+            context: ./recommendation_engine
+            dockerfile: ./recommendation_engine/Dockerfile
+          - service: training_pipeline
+            context: ./training_pipeline
+            dockerfile: ./training_pipeline/Dockerfile
+          - service: nginx
+            context: .
+            dockerfile: ./nginx/Dockerfile
     steps:
       - uses: actions/checkout@v4
 
@@ -112,7 +126,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./${{ matrix.service }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:latest

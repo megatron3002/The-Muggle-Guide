@@ -32,9 +32,7 @@ async def list_books(
     if author:
         query = query.where(Book.author.ilike(f"%{author}%"))
     if search:
-        query = query.where(
-            Book.title.ilike(f"%{search}%") | Book.author.ilike(f"%{search}%")
-        )
+        query = query.where(Book.title.ilike(f"%{search}%") | Book.author.ilike(f"%{search}%"))
 
     # Count total
     count_query = select(func.count()).select_from(query.subquery())

@@ -58,9 +58,7 @@ class ContentBasedRecommender:
             return []
 
         idx = self.book_ids.index(book_id)
-        similarity_scores = cosine_similarity(
-            self.tfidf_matrix[idx : idx + 1], self.tfidf_matrix
-        ).flatten()
+        similarity_scores = cosine_similarity(self.tfidf_matrix[idx : idx + 1], self.tfidf_matrix).flatten()
 
         # Get top N+1 (excluding self)
         top_indices = np.argsort(similarity_scores)[::-1][1 : n + 1]
@@ -82,9 +80,7 @@ class ContentBasedRecommender:
 
         return results
 
-    def get_recommendations_for_user(
-        self, liked_book_ids: list[int], n: int = 10
-    ) -> list[dict]:
+    def get_recommendations_for_user(self, liked_book_ids: list[int], n: int = 10) -> list[dict]:
         """
         Get content-based recommendations for a user based on their liked books.
         Aggregates similarity scores across all liked books.
@@ -98,9 +94,7 @@ class ContentBasedRecommender:
             if book_id not in self.book_ids:
                 continue
             idx = self.book_ids.index(book_id)
-            scores = cosine_similarity(
-                self.tfidf_matrix[idx : idx + 1], self.tfidf_matrix
-            ).flatten()
+            scores = cosine_similarity(self.tfidf_matrix[idx : idx + 1], self.tfidf_matrix).flatten()
             aggregate_scores += scores
 
         # Exclude already liked books

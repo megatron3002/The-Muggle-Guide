@@ -11,7 +11,7 @@ from app.auth.jwt_handler import create_access_token, create_refresh_token, veri
 from app.auth.password import hash_password, verify_password
 from app.database import get_db
 from app.models.user import User, UserRole
-from app.schemas.user import TokenRefresh, TokenResponse, UserLogin, UserRegister, UserResponse
+from app.schemas.user import TokenRefresh, TokenResponse, UserLogin, UserRegister
 
 logger = structlog.get_logger()
 router = APIRouter(prefix="/auth", tags=["Authentication"])

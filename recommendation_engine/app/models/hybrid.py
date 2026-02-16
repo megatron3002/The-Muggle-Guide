@@ -41,9 +41,7 @@ class HybridRecommender:
 
         # Try content-based
         if content_recommender.is_loaded and liked_book_ids:
-            content_results = content_recommender.get_recommendations_for_user(
-                liked_book_ids, n=n * 2
-            )
+            content_results = content_recommender.get_recommendations_for_user(liked_book_ids, n=n * 2)
 
         # Determine strategy
         if collab_results and content_results:

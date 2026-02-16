@@ -13,7 +13,6 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.config import get_settings
 
-
 settings = get_settings()
 
 engine = create_async_engine(

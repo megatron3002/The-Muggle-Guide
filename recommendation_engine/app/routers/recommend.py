@@ -12,9 +12,9 @@ from __future__ import annotations
 import time
 
 import structlog
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import APIRouter
 from prometheus_client import Histogram
+from pydantic import BaseModel, Field
 
 from app.cold_start import cold_start_handler
 from app.models.hybrid import hybrid_recommender
@@ -47,9 +47,7 @@ async def recommend_top(request: TopRequest):
 
     # Extract liked book IDs from interactions
     liked_book_ids = [
-        i["book_id"]
-        for i in request.interactions
-        if i.get("interaction_type") in ("like", "rate", "purchase")
+        i["book_id"] for i in request.interactions if i.get("interaction_type") in ("like", "rate", "purchase")
     ]
 
     # Check cold start
@@ -92,9 +90,7 @@ async def recommend_similar(request: SimilarRequest):
     """Find similar books."""
     start = time.time()
 
-    results, strategy = hybrid_recommender.get_similar_books(
-        book_id=request.book_id, n=request.n
-    )
+    results, strategy = hybrid_recommender.get_similar_books(book_id=request.book_id, n=request.n)
 
     if not results:
         # Try cold start content-based fallback
@@ -115,8 +111,8 @@ async def recommend_similar(request: SimilarRequest):
 async def reload_models():
     """Trigger model reload from disk (called after training completes)."""
     from app.model_store import model_store
-    from app.models.content_based import content_recommender
     from app.models.collaborative import collab_recommender
+    from app.models.content_based import content_recommender
 
     model_store.reload()
     content_loaded = content_recommender.load()

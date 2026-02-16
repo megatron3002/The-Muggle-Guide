@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import structlog
 from implicit.als import AlternatingLeastSquares
-from scipy.sparse import coo_matrix, csr_matrix
+from scipy.sparse import coo_matrix
 
 from app.config import get_settings
 from app.pipeline.model_store import save_artifact
@@ -58,9 +58,7 @@ def train_collab_model(
     n_users = len(unique_users)
     n_items = len(unique_items)
 
-    user_item_matrix = coo_matrix(
-        (weights, (rows, cols)), shape=(n_users, n_items)
-    ).tocsr()
+    user_item_matrix = coo_matrix((weights, (rows, cols)), shape=(n_users, n_items)).tocsr()
 
     # Train ALS
     model = AlternatingLeastSquares(
@@ -83,11 +81,14 @@ def train_collab_model(
     # Save artifacts
     save_artifact("collab_als_model", model)
     save_artifact("collab_user_item_matrix", user_item_matrix)
-    save_artifact("collab_mappings", {
-        "user_id_map": user_id_map,
-        "item_id_map": item_id_map,
-        "book_metadata": book_metadata,
-    })
+    save_artifact(
+        "collab_mappings",
+        {
+            "user_id_map": user_id_map,
+            "item_id_map": item_id_map,
+            "book_metadata": book_metadata,
+        },
+    )
 
     logger.info(
         "collab_model_trained",

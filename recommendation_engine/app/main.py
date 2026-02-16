@@ -77,4 +77,5 @@ async def health():
 @app.get("/metrics")
 async def metrics():
     from starlette.responses import Response
+
     return Response(content=generate_latest(), media_type="text/plain")

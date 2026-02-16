@@ -4,9 +4,6 @@ Content-based model trainer — fits TF-IDF vectorizer on book metadata.
 
 from __future__ import annotations
 
-import pickle
-from pathlib import Path
-
 import pandas as pd
 import structlog
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -30,11 +27,7 @@ def train_content_model(books_df: pd.DataFrame) -> dict:
     # Feature engineering: combine text features
     books_df = books_df.copy()
     books_df["description"] = books_df["description"].fillna("")
-    books_df["combined_features"] = (
-        books_df["genre"] + " " +
-        books_df["author"] + " " +
-        books_df["description"]
-    )
+    books_df["combined_features"] = books_df["genre"] + " " + books_df["author"] + " " + books_df["description"]
 
     # Fit TF-IDF
     vectorizer = TfidfVectorizer(
@@ -59,10 +52,13 @@ def train_content_model(books_df: pd.DataFrame) -> dict:
     # Save artifacts
     save_artifact("content_tfidf_matrix", tfidf_matrix)
     save_artifact("content_vectorizer", vectorizer)
-    save_artifact("content_book_data", {
-        "book_ids": book_ids,
-        "metadata": book_metadata,
-    })
+    save_artifact(
+        "content_book_data",
+        {
+            "book_ids": book_ids,
+            "metadata": book_metadata,
+        },
+    )
 
     logger.info("content_model_trained", n_features=tfidf_matrix.shape[1])
 

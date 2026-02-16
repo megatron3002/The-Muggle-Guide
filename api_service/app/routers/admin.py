@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 
 import structlog
@@ -26,6 +25,7 @@ async def trigger_retrain(
     """
     try:
         from celery import Celery
+
         from app.config import get_settings
 
         settings = get_settings()

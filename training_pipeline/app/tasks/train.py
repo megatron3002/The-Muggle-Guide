@@ -68,6 +68,7 @@ def retrain_models(self):
         popularity_data = _build_popularity_data(books_df, interactions_df)
 
         from app.pipeline.model_store import save_artifact, save_metadata
+
         save_artifact("popularity_data", popularity_data)
 
         # Step 5: Save metadata
@@ -126,21 +127,20 @@ def _build_popularity_data(books_df, interactions_df) -> dict:
         # Score = normalized count * 0.6 + normalized rating * 0.4
         max_count = merged["count"].max() if merged["count"].max() > 0 else 1
         max_rating = merged["avg_rating"].max() if merged["avg_rating"].max() > 0 else 1
-        merged["pop_score"] = (
-            (merged["count"] / max_count) * 0.6 +
-            (merged["avg_rating"] / max_rating) * 0.4
-        )
+        merged["pop_score"] = (merged["count"] / max_count) * 0.6 + (merged["avg_rating"] / max_rating) * 0.4
         popular = merged.nlargest(50, "pop_score")
 
     popular_books = []
     for _, row in popular.iterrows():
-        popular_books.append({
-            "book_id": int(row["id"]),
-            "title": row["title"],
-            "author": row["author"],
-            "genre": row["genre"],
-            "score": float(row.get("pop_score", row.get("avg_rating", 0))),
-        })
+        popular_books.append(
+            {
+                "book_id": int(row["id"]),
+                "title": row["title"],
+                "author": row["author"],
+                "genre": row["genre"],
+                "score": float(row.get("pop_score", row.get("avg_rating", 0))),
+            }
+        )
 
     return {"popular_books": popular_books}
 
@@ -158,18 +158,23 @@ def _update_status(task_id: str, model_version: str, metadata: dict):
     """Update training status in Redis."""
     try:
         import redis
+
         r = redis.from_url(settings.redis_dsn)
         import json
+
         r.setex(
             "model:retrain:latest",
             86400,
-            json.dumps({
-                "task_id": task_id,
-                "status": "completed",
-                "model_version": model_version,
-                "completed_at": datetime.now(timezone.utc).isoformat(),
-                "metrics": metadata,
-            }, default=str),
+            json.dumps(
+                {
+                    "task_id": task_id,
+                    "status": "completed",
+                    "model_version": model_version,
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "metrics": metadata,
+                },
+                default=str,
+            ),
         )
     except Exception as e:
         logger.warning("redis_status_update_failed", error=str(e))

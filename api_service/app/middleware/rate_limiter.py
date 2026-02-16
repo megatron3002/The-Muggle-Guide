@@ -13,7 +13,7 @@ import time
 
 import redis.asyncio as redis
 import structlog
-from fastapi import HTTPException, Request, status
+from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import JSONResponse, Response
 
@@ -34,9 +34,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
     async def _get_redis(self) -> redis.Redis:
         if self.redis_client is None:
-            self.redis_client = redis.from_url(
-                self._redis_url, decode_responses=True
-            )
+            self.redis_client = redis.from_url(self._redis_url, decode_responses=True)
         return self.redis_client
 
     async def _check_rate_limit(self, key: str, limit: int) -> tuple[bool, int]:
@@ -73,17 +71,13 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             logger.warning("rate_limiter_redis_error", key=key)
             return True, limit
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         # Skip rate limiting for health checks and metrics
         if request.url.path in ("/health", "/metrics", "/ready"):
             return await call_next(request)
 
         # Get client IP
-        client_ip = request.headers.get(
-            "X-Real-IP", request.client.host if request.client else "unknown"
-        )
+        client_ip = request.headers.get("X-Real-IP", request.client.host if request.client else "unknown")
 
         # Check per-IP rate limit
         ip_key = f"ratelimit:ip:{client_ip}"
@@ -109,9 +103,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             if payload and payload.get("type") == "access":
                 user_id = payload["sub"]
                 user_key = f"ratelimit:user:{user_id}"
-                user_allowed, user_remaining = await self._check_rate_limit(
-                    user_key, self.per_user_limit
-                )
+                user_allowed, user_remaining = await self._check_rate_limit(user_key, self.per_user_limit)
                 if not user_allowed:
                     return JSONResponse(
                         status_code=status.HTTP_429_TOO_MANY_REQUESTS,

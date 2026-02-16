@@ -23,9 +23,7 @@ class Book(Base):
     published_year: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     avg_rating: Mapped[float] = mapped_column(Float, default=0.0, server_default="0.0")
     total_interactions: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self) -> str:
         return f"<Book id={self.id} title={self.title!r}>"

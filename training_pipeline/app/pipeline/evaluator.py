@@ -34,12 +34,8 @@ def ndcg_at_k(recommended: list[int], relevant: set[int], k: int) -> float:
         return 0.0
 
     rec_at_k = recommended[:k]
-    dcg = sum(
-        1.0 / np.log2(i + 2) for i, r in enumerate(rec_at_k) if r in relevant
-    )
-    ideal_dcg = sum(
-        1.0 / np.log2(i + 2) for i in range(min(len(relevant), k))
-    )
+    dcg = sum(1.0 / np.log2(i + 2) for i, r in enumerate(rec_at_k) if r in relevant)
+    ideal_dcg = sum(1.0 / np.log2(i + 2) for i in range(min(len(relevant), k)))
     return dcg / ideal_dcg if ideal_dcg > 0 else 0.0
 
 

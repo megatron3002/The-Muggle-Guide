@@ -56,21 +56,26 @@ async def lifespan(app: FastAPI):
     # Run DB table creation on first start (dev convenience)
     if settings.environment == "development":
         from app.database import Base, engine
+
         # Import all models so Base.metadata has them registered
-        from app.models import user, book, interaction  # noqa: F401
+        from app.models import book, interaction, user  # noqa: F401
 
         async with engine.begin() as conn:
             # Create PostgreSQL enum types FIRST (asyncpg requires this)
-            await conn.execute(text(
-                "DO $$ BEGIN "
-                "CREATE TYPE userrole AS ENUM ('user', 'admin'); "
-                "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
-            ))
-            await conn.execute(text(
-                "DO $$ BEGIN "
-                "CREATE TYPE interactiontype AS ENUM ('view', 'like', 'rate', 'purchase', 'bookmark'); "
-                "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
-            ))
+            await conn.execute(
+                text(
+                    "DO $$ BEGIN "
+                    "CREATE TYPE userrole AS ENUM ('user', 'admin'); "
+                    "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
+                )
+            )
+            await conn.execute(
+                text(
+                    "DO $$ BEGIN "
+                    "CREATE TYPE interactiontype AS ENUM ('view', 'like', 'rate', 'purchase', 'bookmark'); "
+                    "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
+                )
+            )
             await conn.run_sync(Base.metadata.create_all)
         logger.info("database_tables_created")
 
@@ -79,6 +84,7 @@ async def lifespan(app: FastAPI):
     # Graceful shutdown
     logger.info("api_service_shutting_down")
     from app.services.recommendation_client import close_client
+
     await close_client()
 
 
@@ -146,6 +152,7 @@ async def readiness():
     checks = {}
     try:
         from app.database import engine
+
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         checks["database"] = "ok"
@@ -154,6 +161,7 @@ async def readiness():
 
     try:
         from app.services.cache import get_redis
+
         r = await get_redis()
         await r.ping()
         checks["redis"] = "ok"
@@ -176,5 +184,5 @@ async def liveness():
 @app.get("/metrics", tags=["Monitoring"])
 async def metrics():
     from starlette.responses import Response
-    return Response(content=generate_latest(), media_type="text/plain")
 
+    return Response(content=generate_latest(), media_type="text/plain")

@@ -6,7 +6,6 @@ Supports LocalStack in development and real AWS in production via aws_endpoint_u
 from __future__ import annotations
 
 import json
-import os
 import pickle
 from pathlib import Path
 from typing import Any, Optional
@@ -22,6 +21,7 @@ settings = get_settings()
 def _get_s3_client():
     """Create an S3 client, routing to LocalStack when aws_endpoint_url is set."""
     import boto3
+
     kwargs = {"region_name": settings.aws_region}
     if settings.aws_endpoint_url:
         kwargs["endpoint_url"] = settings.aws_endpoint_url
@@ -97,8 +97,7 @@ class ModelStore:
         try:
             s3 = _get_s3_client()
             s3.upload_file(str(local_path), settings.aws_s3_bucket, s3_key)
-            logger.info("model_uploaded_to_s3", key=s3_key,
-                        endpoint=settings.aws_endpoint_url or "aws")
+            logger.info("model_uploaded_to_s3", key=s3_key, endpoint=settings.aws_endpoint_url or "aws")
         except Exception as e:
             logger.error("s3_upload_error", error=str(e))
 
@@ -106,8 +105,7 @@ class ModelStore:
         try:
             s3 = _get_s3_client()
             s3.download_file(settings.aws_s3_bucket, s3_key, str(local_path))
-            logger.info("model_downloaded_from_s3", key=s3_key,
-                        endpoint=settings.aws_endpoint_url or "aws")
+            logger.info("model_downloaded_from_s3", key=s3_key, endpoint=settings.aws_endpoint_url or "aws")
             return True
         except Exception as e:
             logger.error("s3_download_error", error=str(e))
@@ -116,4 +114,3 @@ class ModelStore:
 
 # Singleton
 model_store = ModelStore()
-

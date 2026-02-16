@@ -1,18 +1,17 @@
 """Alembic environment configuration for async SQLAlchemy."""
 
+import os
+import sys
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-import sys
-import os
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.database import Base
-from app.models import User, Book, UserBookInteraction  # noqa: F401
+from app.models import Book, User, UserBookInteraction  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
@@ -47,6 +46,7 @@ async def run_async_migrations():
 
 def run_migrations_online() -> None:
     import asyncio
+
     asyncio.run(run_async_migrations())
 
 

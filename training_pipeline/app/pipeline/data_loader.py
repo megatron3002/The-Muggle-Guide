@@ -5,9 +5,9 @@ Includes basic data validation checks.
 
 from __future__ import annotations
 
-import structlog
 import pandas as pd
-from sqlalchemy import create_engine, text
+import structlog
+from sqlalchemy import create_engine
 
 from app.config import get_settings
 
@@ -49,7 +49,9 @@ def load_interactions() -> pd.DataFrame:
         assert not df[["user_id", "book_id"]].isnull().any().any(), "Null user/book IDs"
         n_users = df["user_id"].nunique()
         n_items = df["book_id"].nunique()
-        logger.info("interaction_stats", n_users=n_users, n_items=n_items, sparsity=round(1 - len(df) / (n_users * n_items), 4))
+        logger.info(
+            "interaction_stats", n_users=n_users, n_items=n_items, sparsity=round(1 - len(df) / (n_users * n_items), 4)
+        )
 
     return df
 
