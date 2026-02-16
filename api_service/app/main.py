@@ -86,6 +86,7 @@ app = FastAPI(
     title="Book Recommendation System",
     description="Production-ready book recommendation API with hybrid ML models",
     version="1.0.0",
+    root_path="/api",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
