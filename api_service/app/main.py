@@ -20,6 +20,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_client import Counter, Histogram, generate_latest
+from sqlalchemy import text
 
 from app.config import get_settings
 from app.logging_config import setup_logging
@@ -176,6 +177,3 @@ async def metrics():
     from starlette.responses import Response
     return Response(content=generate_latest(), media_type="text/plain")
 
-
-# ── Import text for readiness check ──
-from sqlalchemy import text
