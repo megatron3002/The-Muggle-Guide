@@ -55,7 +55,21 @@ async def lifespan(app: FastAPI):
     # Run DB table creation on first start (dev convenience)
     if settings.environment == "development":
         from app.database import Base, engine
+        # Import all models so Base.metadata has them registered
+        from app.models import user, book, interaction  # noqa: F401
+
         async with engine.begin() as conn:
+            # Create PostgreSQL enum types FIRST (asyncpg requires this)
+            await conn.execute(text(
+                "DO $$ BEGIN "
+                "CREATE TYPE userrole AS ENUM ('user', 'admin'); "
+                "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
+            ))
+            await conn.execute(text(
+                "DO $$ BEGIN "
+                "CREATE TYPE interactiontype AS ENUM ('view', 'like', 'rate', 'purchase', 'bookmark'); "
+                "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
+            ))
             await conn.run_sync(Base.metadata.create_all)
         logger.info("database_tables_created")
 
