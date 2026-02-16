@@ -31,7 +31,8 @@ class UserBookInteraction(Base):
         Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False, index=True
     )
     interaction_type: Mapped[InteractionType] = mapped_column(
-        Enum(InteractionType), nullable=False
+        Enum(InteractionType, values_callable=lambda e: [x.value for x in e]),
+        nullable=False
     )
     rating: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
